@@ -15,6 +15,8 @@ export const connectToSocket = (server) => {
   });
 
   io.on("connection", (socket) => {
+    console.log("SOMETHING CONNECTED!");
+
     socket.on("join-call", (path) => {
       if (connections[path] === undefined) {
         connections[path] = [];
@@ -23,7 +25,7 @@ export const connectToSocket = (server) => {
       timeOnline[socket.id] = new Date();
 
       for (let a = 0; a < connections[path].length; a++) {
-        io.to(connection[path][a]).emit(
+        io.to(connections[path][a]).emit(
           "user-joined",
           socket.id,
           connections[path]
@@ -67,10 +69,10 @@ export const connectToSocket = (server) => {
           data: data,
           "socket-id-sender": socket.id,
         });
-        console.log(`message : ${sender} ${data}`);
+        console.log(`message ${matchingRoom} : ${sender} ${data}`);
 
         connections[matchingRoom].forEach((ele) => {
-          io.to(socket.id).emit("chat-message", data, sender, socket.id);
+          io.to(ele).emit("chat-message", data, sender, socket.id);
         });
       }
     });
@@ -95,7 +97,7 @@ export const connectToSocket = (server) => {
 
             connections[key].splice(index, 1);
 
-            if (connection[key].length === 0) {
+            if (connections[key].length === 0) {
               delete connections[key];
             }
           }

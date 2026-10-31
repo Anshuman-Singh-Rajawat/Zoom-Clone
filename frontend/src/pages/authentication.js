@@ -10,6 +10,8 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { AuthContext } from "../contexts/AuthContext";
+import Snackbar from "@mui/material/Snackbar";
 
 const defaultTheme = createTheme();
 
@@ -17,15 +19,67 @@ export default function Authentication() {
   const [username, setUsername] = React.useState();
   const [password, setPassword] = React.useState();
   const [name, setName] = React.useState();
+  const [error, setError] = React.useState();
+  const [message, setMessage] = React.useState();
+
   const [formState, setFormState] = React.useState(1);
+
+  const [open, setOpen] = React.useState(false);
+
+  const { handleRegister, handleLogin } = React.useContext(AuthContext);
+
+  let handleAuth = async () => {
+    try {
+      if (formState === 0) {
+        let result = await handleLogin(username, password);
+      }
+      if (formState === 1) {
+        let result = await handleRegister(name, username, password);
+        console.log(result);
+        setName("");
+        setUsername("");
+        setPassword("");
+        setError("");
+        setMessage(result);
+        setOpen(true);
+        setFormState(0);
+      }
+    } catch (err) {
+      let message = err.response.data.message;
+      setError(message);
+    }
+  };
 
   return (
     <ThemeProvider theme={defaultTheme}>
       <Grid container component="main" sx={{ height: "100vh" }}>
         <CssBaseline />
 
-        {/* Form Side (Renders Left) */}
-        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+        {/* Image Side (Renders Left) */}
+        <Grid
+          size={{ xs: 12, sm: 4, md: 7 }}
+          sx={{
+            display: { xs: "none", sm: "block" },
+            minHeight: "100vh", // Forces the container to stretch
+            backgroundImage:
+              "url(https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2000&auto=format&fit=crop)",
+            backgroundRepeat: "no-repeat",
+            backgroundColor: (t) =>
+              t.palette.mode === "light"
+                ? t.palette.grey[50]
+                : t.palette.grey[900],
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+
+        {/* Form Side (Renders Right) */}
+        <Grid
+          size={{ xs: 12, sm: 8, md: 5 }}
+          component={Paper}
+          elevation={6}
+          square
+        >
           <Box
             sx={{
               my: 8,
@@ -61,6 +115,7 @@ export default function Authentication() {
                   id="fullName"
                   label="Full Name"
                   name="fullName"
+                  value={name}
                   autoFocus
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -72,6 +127,7 @@ export default function Authentication() {
                 id="username"
                 label="Username"
                 name="username"
+                value={username}
                 autoFocus
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -80,48 +136,28 @@ export default function Authentication() {
                 required
                 fullWidth
                 name="password"
+                value={password}
                 label="Password"
                 type="password"
                 id="password"
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <FormControlLabel
-                control={<Checkbox value="remember" color="primary" />}
-                label="Remember me"
-              />
+              <p style={{ color: "red" }}>{error}</p>
               <Button
                 type="button"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
+                onClick={handleAuth}
               >
-                Sign In
+                {formState === 0 ? "Login" : "Register"}
               </Button>
             </Box>
           </Box>
         </Grid>
-
-        {/* Image Side (Renders Right) */}
-        <Grid
-          item
-          xs={12}
-          sm={4}
-          md={7}
-          sx={{
-            display: { xs: "none", sm: "block" },
-            minHeight: "100vh", // Forces the container to stretch
-            backgroundImage:
-              "url(https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2000&auto=format&fit=crop)",
-            backgroundRepeat: "no-repeat",
-            backgroundColor: (t) =>
-              t.palette.mode === "light"
-                ? t.palette.grey[50]
-                : t.palette.grey[900],
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
       </Grid>
+
+      <Snackbar open={open} autoHideDuration={4000} message={message} />
     </ThemeProvider>
   );
 }
