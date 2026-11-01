@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer } from "node:http";
 import { connectToSocket } from "./controllers/socketManager.js";
@@ -18,9 +19,7 @@ app.use(express.urlencoded({ limit: "40kb", extended: true }));
 app.use("/api/v1/users", userRoutes);
 
 const start = async () => {
-  await mongoose.connect(
-    "mongodb+srv://anshumansinghrajawat0_db_user:qfZoYjuZzcS71snb@zoomclonecluster.dv6dc0x.mongodb.net/"
-  );
+  await mongoose.connect(process.env.MONGO_URL);
   console.log(`MongoDB connection successful`);
   server.listen(app.get("port"), () => {
     console.log("listening to port 8000");
